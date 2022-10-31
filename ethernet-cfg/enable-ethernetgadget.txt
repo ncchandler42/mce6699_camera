@@ -1,0 +1,18 @@
+# in the file /boot/config.txt, under the [all] block
+# add this line:
+
+dtoverlay=dwc2
+
+# Then in the file /boot/cmdline.txt, append this to the end of the line
+# following "rootwait" followed by a space
+
+# Example: my cmdline.txt looks like this:
+# console=serial0,115200 console=tty1 root=PARTUUID=e8274d10-02 rootfstype=ext4 fsck.repair=yes rootwait modules-load=dwc2,g_ether
+# DO NOT COPY THIS ENTIRE LINE, just add the modules-load arg
+
+modules-load=dwc2,g_ether
+
+# at bottom of /etc/rc.local
+# before 'exit 0', add this line:
+
+$(nmcli c up EthernetGadget &>/dev/null) &

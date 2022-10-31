@@ -1,0 +1,6 @@
+Rename/edit file "robocam-00.nmconnection".
+SSID and passphrase configuration are saved in this file, so change as
+seen fit. Once prepared, move to NetworkManager's directory:
+
+sudo cp robocam-00.nmconnection /etc/NetworkManager/system-connections/
+sudo chmod 600 /etc/NetworkManager/system-connections/robocam-00.nmconnection
