@@ -308,7 +308,7 @@ provide a wider view.
 +--------------------------------+--------------+----------------------------------------------+
 | Hardware                       | Price (MSRP) | Considerations                               |
 +:===============================+:============:+:=============================================+
-| NVIDIA Jetson Nano 4GB         | $99.00       | - 2 MIPI CSI-2 connectors, 12 lanes          |
+| NVIDIA Jetson Nano 4GB         | $149.00      | - 2 MIPI CSI-2 connectors, 12 lanes          |
 |                                |              |     - Able to run 4 cameras simultaneously   |
 |                                |              | - Large list of supported camera sensors     |
 |                                |              | - Designed for AI/CV processing applications |
