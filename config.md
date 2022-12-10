@@ -1,5 +1,5 @@
 ---
-title: MCE 6699 Camera Project Notes
+title: Modular Camera Array for Robotic Arm
 author: Nolan Chandler
 date: Fall 2022
 
@@ -22,7 +22,29 @@ lof: true
 
 # Transmittal Letter
 
-TODO
+Dearest recipient,
+
+The following report offers instructions for and details about the configuration of
+two different systems with the goal of designing and maintaining a modular camera
+array for different purposes. The purpose of this writing is to provide a solid
+foundation for future work; all included instructions are the result of many hours
+of tinkering to see what works, and how complicated it is to set up. Despite my
+best efforts, there may still be errors or incompatibilities with the current set
+of instructions, and there is, unfortunately, no guarantee the systems configured
+within this work will be maintained by their manufacturers.
+
+The greatest effort was made to be as accurate as possible and as verbose as needed.
+Notwithstanding these efforts, if any misunderstanding arises, feel free to get in
+contact with me to ask any questions.
+
+I hope my work provides what it was intended to as this project and the projects
+that will branch from it advance.
+
+Best regards,
+
+Nolan Chandler
+
+`nolanchandler@isu.edu`
 
 # Summary
 
@@ -48,18 +70,17 @@ configuration that would be needed in the end product.
 
 Table: Raspberry Pi Camera Setup
 
-Hardware                                                                                                      Price (MSRP)
----------                                                                                                     -------------
-[Raspberry Pi Zero W](https://www.raspberrypi.com/products/raspberry-pi-zero-w/)                              $10.00
-[Raspberry Pi Camera Module v2](https://www.raspberrypi.com/products/camera-module-v2/)                       $25.00 ea.
-[Arducam Multi Camera Adapter](https://www.amazon.com/Arducam-Camera-Adapter-Raspberry-Cameras/dp/B07TYL36MC) $50.00
+Hardware                                                                                Price (MSRP)
+---------                                                                               -------------
+[Raspberry Pi Zero W](https://www.raspberrypi.com/products/raspberry-pi-zero-w/)        $10.00
+[Raspberry Pi Camera Module v2](https://www.raspberrypi.com/products/camera-module-v2/) $25.00 ea.
 
 ## Current configuration
 
 ### Note
 
 All the files mentioned in these instructions can be found on the author's personal
-GitHub account in a public repo, linked here:
+GitHub account in a public repository, linked here:
 
 <https://github.com/ncchandler42/mce6699_camera>
 
@@ -67,6 +88,7 @@ GitHub account in a public repo, linked here:
 
 - Username: `pi`
 - Password: `idahostateMCE`
+- Hostname: `robocam-00`
 - IP: `10.42.0.1` on WiFi, `10.43.0.1` on Bluetooth
 
 ## Initial configuration
@@ -418,20 +440,26 @@ to the network your device is connected to:
 
 ![Camera stream as seen from Firefox Web Browser](imgs/http-serv.png)
 
+## Results
+
+As these final tests were conducted, it became apparent that the Raspberry Pi
+Zero W would not be sufficient for our applications. The Pi is able to run a
+single camera video stream, but at a low frame rate due to its limited processing
+power. In these tests, the camera stream was updated at only 10 frames per second.
+The intended use cases require a higher frame rate. To provide a smooth experience
+to a remote operator, a target frame rate of 30 frames per second was estimated.
+Additionally, for motion detection and object avoidance, extra processing power
+is required to process the frames as they are collected from the sensor.
+
 # Alternate Hardware Considerations
 
 For the motion detection function, a camera with a wide-angle/fish-eye lens will
-provide a wider view.
+provide a wider view. Additionally, a board built for image acquisition and processing
+would better suit the performance requirements of the project.
 
 +--------------------------------+--------------+----------------------------------------------+
 | Hardware                       | Price (MSRP) | Considerations                               |
 +:===============================+:============:+:=============================================+
-| NVIDIA Jetson Nano 4GB         | $149.00      | - 2 MIPI CSI-2 connectors, 12 lanes          |
-|                                |              |     - Able to run 4 cameras simultaneously   |
-|                                |              | - Large list of supported camera sensors     |
-|                                |              | - Designed for AI/CV processing applications |
-|                                |              | - Relatively high power draw, up to 10W      |
-+--------------------------------+--------------+----------------------------------------------+
 | M5stack ESP32 Unit Cam DIY Kit | $18.95       | - Inexpensive                                |
 |                                |              | - Kit provides OV2640 (2MP) sensor           |
 |                                |              |   and wide-angle lens                        |
@@ -440,9 +468,208 @@ provide a wider view.
 |                                |              |   charging integrated                        |
 |                                |              | - Requires other system to process images    |
 +--------------------------------+--------------+----------------------------------------------+
-| PiHut ZeroCam FishEye          | $14.02       | - 5MP sensor with wide-angle lens            |
-|                                |              | - Intended for use with RPi Zero, other Pi   |
-|                                |              |   models require an adapter                  |
+| NVIDIA Jetson Nano 4GB         | $149.00      | - 2 MIPI CSI-2 connectors, 12 lanes          |
+|                                |              |     - Able to run 4 cameras simultaneously   |
+|                                |              | - Large list of supported camera sensors     |
+|                                |              | - Designed for AI/CV processing applications |
+|                                |              | - Relatively high power draw, up to 10W      |
 +--------------------------------+--------------+----------------------------------------------+
 
 Table: Caption
+
+## M5Stack ESP32 WiFi camera
+
+The M5Stack ESP32 camera is a small, self-contained camera system. It is powered
+by a standard LiPo battery, and comes with a $160^{\circ}$ wide-angle lens. The
+microcontroller that runs the camera is an ESP32, which is an MCU with strong
+performance and built-in WiFi capabilities. The intention behind finding a camera
+system like this one is to offload the work of receiving the image from the camera
+sensor from the processor of a host board like the Pi, and instead create a
+wireless array of cameras that can operate independently from the host board.
+
+Due to the necessity of a powerful host board in the first place, this option was
+eventually dropped in favor of a simpler system with a single board that manages
+its own cameras.
+
+![M5Stack Camera Kit](imgs/m5stack.png)
+
+## NVIDIA Jetson Nano 4GB
+
+NVIDIA's Jetson line of single-board computers are purpose-built for image processing
+and artificial intelligence workloads, and are abundant in the industries requiring
+power and small form-factor. The Jetson Nano is one of the more modestly priced
+boards available from NVIDIA, being aimed at not only industries, but hobbyists.
+The system module has the required camera lanes available to run 4 cameras simultaneously
+although the developer kit only breaks these lanes out into 2 MIPI camera ports.
+To run more cameras, a custom carrier board for the module would need to be sourced.
+
+This option was dropped simply because at the time of writing, these boards are
+unavailable from any retailers at acceptable prices.
+
+## NVIDIA Jetson AGX Xavier
+
+What the Jetson Nano has going for it, the AGX Xavier has, and more. It is one of
+NVIDIA's more powerful modules for image processing, and is able to run 6 cameras
+simultaneously while offering plenty of power for processing the streams in real-time.
+While no longer available for purchase from NVIDIA (as they have moved on to their
+next generation of boards), this board was previously purchased by a faculty member
+and was available to use, at no additional cost to us of funds or time.
+
+![NVIDIA Jetson AGX Xavier](imgs/xavier.png)
+
+# AGX Xavier Setup and Configuration
+
+## Host computer
+
+At the time of writing, NVIDIA requires that their installation tool be run on a Linux computer,
+with the supported Linux distributions listed on the its download page.
+However, the host tools and the OS image (known together as the Jetpack SDK)
+**ONLY** support a few versions of Ubuntu Linux. At the time of writing, to match
+compatibility between the current version of the SDKManager program and the Jetpack SDK,
+a laptop was set up with Ubuntu 20.04 LTS, with the following configuration:
+
+- Username: `jetson`
+- Password: `idahostateMCE`
+
+## Flashing the Operating System
+
+A separate computer is required to retrieve and flash the operating
+system image to the board. This is done using NVIDIA's SDKManager tool.
+
+### Installing SDKManager
+
+SDKManager is available on NVIDIA's developer website as a free download, found
+at the address below:
+
+<https://developer.nvidia.com/drive/sdk-manager>
+
+In order to access the download, you must create an NVIDIA developer account. This
+account information will also be used to login to SDKManager once it is installed.
+
+Once downloaded, the SDKManager can be installed by navigating to the `Downloads`
+directory and installing the `.deb` package using `apt`:
+
+```
+$ cd Downloads
+$ sudo apt install ./sdkmanager-{version}.deb
+```
+
+Once installed, SDKManager can be launched from the applications menu. A prompt is
+then given to login to an NVIDIA developer account.
+
+### Setting the Jetson board into "Force Recovery Mode"
+
+To flash the operating system onto the Xavier's internal memory, it must first
+be booted into "Force Recovery Mode". This is done following these steps:
+
+1. Power off the board, if previously running
+2. Connect the power adapter to the rear of the board
+3. Connect an HDMI-compatible display to the HDMI port on the rear of the board
+4. Connect a keyboard and mouse to the rear USB ports
+    - There is only 1 available USB-A port, but the Xavier kit includes a USB-C male
+      to USB-A female adapter to make use of the rear USB-C port as well.
+5. Connect the Xavier board to the host computer from the front USB-C port using
+   the included USB-C male to USB-A male cable
+6. Press and hold the Recovery button on the board
+    - The button is marked with a small icon of a circle made of two arrows
+7. While continuing to hold the Recovery button, press and hold the power button
+   until the power LED on the front of the board lights up
+8. Release both buttons
+
+You can verify that the board is in the Recovery mode by checking SDKManager;
+it will automatically be discovered and identified.
+
+### Downloading and flashing
+
+![The main page of SDKManager](imgs/sdkmanager.png)
+
+Verify that the board has been discovered by SDKManager on its main page. From
+this page, the desired hardware configuration can be set. By choosing the
+host machine as well as the target hardware, useful development tools will be
+installed locally by SDKManager. The version of the JetPack SDK can then be
+selected, which should be the most recent available version.
+
+If running a Linux distribution or version not supported by the current version
+of the JetPack SDK, instead a box to select a version, a greyed out
+box with a cryptic message about the OS not being supported will appear. This will
+be the case when NVIDIA drops support for Ubuntu 20.04, which will likely happen in
+the future, since at the time of writing, a newer Long Term Support (LTS) version of
+Ubuntu is already available (22.04 LTS).
+
+After selecting the desired version of JetPack SDK, additional SDKs can be added
+to the installation. These SDKs may be of use for future applications, so for the
+current configuration, all available SDKs were added.
+
+Once the configuration is as desired, click the "Continue" button to proceed with
+the installation. The installer will then download the chosen software components,
+including the operating system for the Xavier board. As components finish downloading,
+they will be verified and the flashing process will begin.
+
+All throughout the process, several prompts appear, some asking for the host computer's
+password to install programs locally. The prompts will pause any ongoing operation
+until they are completed; to keep the installation process moving along will require
+being present at the computer watching for these prompts.
+
+One of the final prompts will ask about configuring a username and password for
+the newly flashed operating system on the Xavier board. As the prompt explains,
+this can be done from either the prompt itself or by following the setup instructions
+given on the display attached to the Xavier board.
+
+## Current configuration
+
+- Username: `jetson`
+- Password: `idahostateMCE`
+- Hostname: `agx-xavier`
+
+## Image Processing Demo
+
+Included with the software installed on the operating system image are several
+demonstrations. As this project will require using multiple cameras simultaneously,
+a demo was found that uses images captured from 2 connected cameras to calculate
+stereo depth. The demo also provides example video streams.
+
+![Stereo depth demo running on the AGX Xavier](imgs/nv-demo.png)
+
+Using one of the example video streams, the AGX Xavier was observed being able to
+process the images and render the output in real-time, well above an acceptable
+frame rate.
+
+# Future Considerations
+
+![Bottom of the AGX Xavier, showing the camera connector roughly centered on the board](imgs/xavier-ports.png)
+
+Due to a misunderstanding on part of the author, it was thought that the AGX Xavier
+Developer Kit board had the available CSI-2 ports to connect cameras similar to
+(and including) the Raspberry Pi Camera Module v2. It was soon discovered that this
+was not the case, and that the AGX Xavier instead breaks out its MIPI camera lanes
+using a proprietary connector. In order to connect cameras to the board, an additional
+adapter board will need to be purchased. NVIDIA does not manufacture or own a
+design for the necessary adapter board, but instead offers the specifications and
+pinout of the connector so that users can design an adapter board to their own needs.
+Because of this, there are not many available options for purchase.
+
+One available adapter board is offered by an NVIDIA-partnered company named
+Leopard Imaging. The adapter is included in a number of different camera kits,
+based on the desired camera sensor, and number of included cameras.
+
+The most modest camera module they offer in these kits is the Sony IMX185, which
+is capable of a full HD 1080p video stream at 60 frames per second, which meets
+the base requirements of the project. The kit, including 3 of these cameras, 3 cables
+(30 cm each) and the needed adapter board, is available for \$919.00 at the following
+address:
+
+<https://www.leopardimaging.com/product/nvidia-jetson-cameras/nvidia-agx-xavier-camera-kits/li-xavier-kit-imx185cs/li-xavier-kit-imx185m12-t/>
+
+Longer cables, up to 1 m long, can also be purchased from Leopard Imaging as required.
+
+Once the required hardware is obtained, other demos included on the board will
+provide a good starting point and reference moving forward, as well as providing
+a means to verify the cameras' function and capabilities.
+
+# Appendix
+
+All files used to configure the Raspberry Pi, as well as documentation for the Pi,
+its camera libraries, and the Jetson AGX Xavier, can be found on the author's personal
+GitHub account via a public repository:
+
+<https://github.com/ncchandler42/mce6699_camera>
